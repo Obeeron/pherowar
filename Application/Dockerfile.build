@@ -1,0 +1,26 @@
+# syntax=docker/dockerfile:1
+
+# --- Build Stage ---
+FROM docker.io/rust:1.86.0-slim-bookworm AS builder
+
+WORKDIR /app
+
+# Install build dependencies and UID/GID mapping tools
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      build-essential \
+      musl-tools \
+       && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY . .
+
+RUN chmod +x ./build.sh && ./build.sh
+
+# --- Runtime Stage ---
+FROM scratch AS export
+
+# Copy built binaries 
+COPY --from=builder /app/bin /out/bin
+
+CMD ["/bin/true"]

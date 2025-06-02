@@ -1,0 +1,11 @@
+target
+*.log
+*.bin
+*.so
+*.gz
+bin
+players
+*.codeman
+*.lock
+*.json
+instructions.md

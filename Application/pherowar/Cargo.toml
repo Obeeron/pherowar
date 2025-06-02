@@ -1,0 +1,20 @@
+[package]
+name = "pherowar"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+shared = { path = "../shared" }
+toml = { version = "0.8" }
+serde = {  version = "1.0", features = ["derive"] }
+bincode = { version = "2.0" }
+clap = { version = "4.5", features = ["derive"] }
+anyhow = { version = "1.0" }
+egui = "0.28.1"
+new-egui-macroquad = { version = "0.16.0", default-features = false }
+macroquad = { version="0.4.5", default-features = false}
+catppuccin-egui = { version="5.5", default-features = false, features = ["egui28"]}
+lazy_static = "1.5"
+bincode_derive = "2.0"
+rkyv = { version = "0.8.10", default-features = true }
+slotmap = "1.0"

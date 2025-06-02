@@ -1,0 +1,11 @@
+[package]
+name = "player"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+shared = { path = "../shared" }
+bincode = "2.0"
+rand = "0.9"
+libloading = "0.7"
+rkyv = { version = "0.8.10", default-features = true }

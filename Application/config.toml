@@ -1,0 +1,4 @@
+colony_initial_population = 1000
+map = "spiral.map"
+players_dir = "../players/"
+maps_dir = "./maps/"

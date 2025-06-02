@@ -1,0 +1,24 @@
+v1.1
+- Fixed a critical bug where removing/replacing a colony would not remove its ants references from the map data, confusing newly spawned colonies with ghost refs.
+- Updated documentation and fixed inconsistencies with actual simulation.
+- Changed 'intensity' to 'distance' in AntInput for `wall_sense`, `colony_sense`, `food_sense`, and `enemy_sense`. It now reflects the distance in tiles to the target and has value -1.0 when not sensing anything.
+- Updated ANT_SPAWN_INTERVAL from 0.1 to 0.3
+- Trigger a think tick when an ant enters food or colony
+- Added ant's is_on_food and is_on_colony to debug panel
+- Fixed a bug where you could not unpause after a colony won
+- Fixed a bug where the colony tool could not be opened when all colonies were placed
+- Changed shortcuts:
+    - Changed Ctrl+R, Ctrl+S, Ctrl+L shortcuts to R, S, L respectively.
+    - Added Spacebar as a shortcut to toggle pause/resume.
+- Fixed the symmetry tool inverting the horizontal and vertical symmetry.
+- Added a double diagonal symmetry tool.
+- Fixed is_on_food. When the last food is taken, it is set to `false`.
+- Saving a blank map now sets it as the current map, so resets restore the saved map.
+- Updated placeholder placeholder for map name to current map name or "Untitled.map".
+- Ant don't die on timeout, their think tick is just ignored and has no effect.
+- Add CPU usage limit per container. 0.25 of the total CPU time available to the container.
+- Set colony id based on lowest available id, avoid spamming with new log files.
+- Renamed player logs from player_<colony_id>.log to <so_name>_<colony_id>_.log for easier identification.
+- Fix real time stdout/stderr container logs in `Application/<so_name>_<colony_id>_.log`
+
+v1.0
