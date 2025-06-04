@@ -5,7 +5,7 @@ PheroWar is an RTS game where you design ant colony AI. Your goal is to program 
 
 The PheroWar game application hosts the simulation. Each player's AI runs in an isolated container, executing a player process that loads your compiled AI (`<player>.so` shared library).
 
-![PheroWar Application Structure](./doc-assets/pherowar-structure.png)
+![PheroWar Application Structure](./assets/pherowar-structure.png)
 
 ## 2. Getting Started: Your Player AI
 Define your colony's AI in a `<your-colony-name>.so` loaded dynamically from the `./players/` folder everytime a colony is (re)placed on the map.
