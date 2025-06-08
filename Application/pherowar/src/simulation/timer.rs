@@ -1,5 +1,5 @@
 // Timer struct for countdown logic in simulation
-// Counts down from initial_value to 0, then can be reset to max_value
+// Counts up from 0 to max_value
 
 #[derive(Debug, Clone)]
 pub struct Timer {
@@ -16,23 +16,23 @@ impl Timer {
         }
     }
 
-    /// Returns true if the timer has reached zero or below
+    /// Returns true if the timer has gone past the max value
     pub fn is_ready(&self) -> bool {
-        self.value <= 0.0
+        self.value >= self.max_value
     }
 
-    /// Decrease the timer by dt (delta time)
+    /// Update the timer by dt (delta time)
     pub fn update(&mut self, dt: f32) {
-        self.value -= dt;
+        self.value += dt;
     }
 
-    /// Reset the timer to max_value
-    pub fn reset(&mut self) {
-        self.value = self.max_value;
+    /// Wraps the timer value back within bounds.
+    pub fn wrap(&mut self) {
+        self.value %= self.max_value;
     }
 
     /// Force the timer to be ready
     pub fn force_ready(&mut self) {
-        self.value = 0.0;
+        self.value = self.max_value;
     }
 }

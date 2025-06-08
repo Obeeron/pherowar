@@ -67,7 +67,7 @@ impl Colony {
             colony_id,
             player_connection,
             player_config: player_cfg,
-            pheromone_decay_timer: Timer::new(PHEROMONE_DECAY_INTERVAL, PHEROMONE_DECAY_INTERVAL),
+            pheromone_decay_timer: Timer::new(PHEROMONE_DECAY_INTERVAL, 0.0),
             ant_spawn_timer: 0.0,
         })
     }
@@ -81,7 +81,7 @@ impl Colony {
         self.pheromone_decay_timer.update(dt);
         if self.pheromone_decay_timer.is_ready() {
             self.decay_pheromones();
-            self.pheromone_decay_timer.reset();
+            self.pheromone_decay_timer.wrap();
         }
 
         let (pheromones, player_connection, pos) =

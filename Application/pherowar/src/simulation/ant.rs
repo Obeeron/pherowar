@@ -122,7 +122,7 @@ impl Ant {
             // Handle think tick
             // During this tick, the ant perceives the environment, thinks (player update call), and applies pheromones
 
-            self.think_timer.reset();
+            self.think_timer.wrap();
 
             // Perceive the environment
             let (ant_input, perceived) = self.perceive(map, pheromones, colony_pos);
