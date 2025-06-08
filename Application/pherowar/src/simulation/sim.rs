@@ -25,7 +25,7 @@ impl Simulation {
         map_name: Option<String>,
     ) -> Self {
         let map = if let Some(ref name) = map_name {
-            match GameMap::load_map_with_dir(name, config.maps_dir.as_deref()) {
+            match GameMap::load_map(name) {
                 Ok(mut map) => {
                     map.loaded_map_name = Some(name.clone());
                     map
@@ -275,7 +275,7 @@ impl Simulation {
         self.tick = 0;
 
         if let Some(ref name) = self.map.loaded_map_name.clone() {
-            match GameMap::load_map_with_dir(name, self.config.maps_dir.as_deref()) {
+            match GameMap::load_map(name) {
                 Ok(mut loaded_map) => {
                     loaded_map.loaded_map_name = Some(name.clone());
                     self.map = loaded_map;

@@ -18,9 +18,6 @@ pub struct PlayerConfig {
 #[derive(Deserialize, Debug, Clone)]
 pub struct SimulationConfig {
     pub colony_initial_population: u32,
-    pub map: Option<String>,         // Optional map file to load at startup
-    pub players_dir: Option<String>, // Directory for player .so files
-    pub maps_dir: Option<String>,    // Directory for map files
 }
 
 /// Configuration for the entire application including CLI parameters
@@ -28,15 +25,13 @@ pub struct AppConfig {
     pub simulation: SimulationConfig,
     pub cli_players: Option<Vec<String>>,
     pub player_configs: Vec<PlayerConfig>,
+    pub map_name: Option<String>,
 }
 
 impl Default for SimulationConfig {
     fn default() -> Self {
         Self {
             colony_initial_population: 10000,
-            map: None,
-            players_dir: Some("players/".to_string()),
-            maps_dir: Some("maps/".to_string()),
         }
     }
 }
@@ -44,21 +39,14 @@ impl Default for SimulationConfig {
 impl AppConfig {
     pub fn from_cli_and_config(
         cli: crate::Cli,
-        mut simulation: SimulationConfig,
+        simulation: SimulationConfig,
     ) -> Result<Self, Box<dyn std::error::Error>> {
-        if let Some(map_name) = cli.map {
-            simulation.map = Some(map_name);
-        }
-
         let cli_players = cli.players;
+        let map_name = cli.map.or_else(|| Self::find_first_available_map());
 
-        let player_configs = load_player_configs(simulation.players_dir.as_deref());
+        let player_configs = load_player_configs();
 
-        if simulation.map.is_some() && cli_players.is_none() {
-            return Err("When providing a map, you must also provide a list of players".into());
-        }
-
-        if cli_players.is_some() && simulation.map.is_none() {
+        if cli_players.is_some() && map_name.is_none() {
             return Err("CLI players provided but no map specified".into());
         }
 
@@ -66,7 +54,26 @@ impl AppConfig {
             simulation,
             cli_players,
             player_configs,
+            map_name,
         })
+    }
+
+    /// Find the first available map in the maps directory
+    fn find_first_available_map() -> Option<String> {
+        let maps_dir = Path::new("./Application/maps/");
+        if let Ok(entries) = fs::read_dir(maps_dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if let Some(ext) = path.extension() {
+                    if ext == "map" {
+                        if let Some(file_name) = path.file_name() {
+                            return Some(file_name.to_string_lossy().to_string());
+                        }
+                    }
+                }
+            }
+        }
+        None
     }
 }
 
@@ -80,10 +87,9 @@ pub fn window_conf() -> Conf {
     }
 }
 
-pub fn load_player_configs(players_dir: Option<&str>) -> Vec<PlayerConfig> {
+pub fn load_player_configs() -> Vec<PlayerConfig> {
     let mut players = Vec::new();
-    let dir = players_dir.unwrap_or("players/");
-    let players_dir = Path::new(dir);
+    let players_dir = Path::new("./players/");
     if let Ok(entries) = fs::read_dir(players_dir) {
         for entry in entries.flatten() {
             let path = entry.path().canonicalize().unwrap_or_default();

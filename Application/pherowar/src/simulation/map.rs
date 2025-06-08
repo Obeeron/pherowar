@@ -118,11 +118,6 @@ impl From<SerializedMap> for GameMap {
     }
 }
 
-// Replace the maps_dir function to allow dynamic directory
-pub fn maps_dir(config_maps_dir: Option<&str>) -> std::path::PathBuf {
-    std::path::Path::new(config_maps_dir.unwrap_or("maps/")).to_path_buf()
-}
-
 impl GameMap {
     pub fn new(width: u32, height: u32) -> Self {
         Self {
@@ -270,12 +265,11 @@ impl GameMap {
     }
 
     /// Save the map
-    pub fn save_map_with_dir<P: AsRef<Path>>(
+    pub fn save_map<P: AsRef<Path>>(
         &mut self,
         name: P,
-        maps_dir: Option<&str>,
     ) -> io::Result<()> {
-        let dir = crate::simulation::map::maps_dir(maps_dir);
+        let dir = std::path::Path::new("./Application/maps/");
         if !dir.exists() {
             fs::create_dir_all(&dir)?;
         }
@@ -290,12 +284,11 @@ impl GameMap {
     }
 
     /// Load a map and return a GameMap with loaded_map_name set.
-    pub fn load_map_with_dir<P: AsRef<Path>>(
+    pub fn load_map<P: AsRef<Path>>(
         name: P,
-        maps_dir: Option<&str>,
     ) -> io::Result<GameMap> {
         let name_str = name.as_ref().to_string_lossy().to_string();
-        let file_path = crate::simulation::map::maps_dir(maps_dir).join(&name_str);
+        let file_path = std::path::Path::new("./Application/maps/").join(&name_str);
         let data = fs::read(file_path)?;
         let (serialized, _len): (SerializedMap, _) =
             decode_from_slice(&data, bincode::config::standard())
@@ -307,8 +300,8 @@ impl GameMap {
     }
 
     /// List all map files in the maps/ directory
-    pub fn list_maps_with_dir(maps_dir: Option<&str>) -> io::Result<Vec<String>> {
-        let maps_dir_path = crate::simulation::map::maps_dir(maps_dir);
+    pub fn list_maps() -> io::Result<Vec<String>> {
+        let maps_dir_path = std::path::Path::new("./Application/maps/");
         if !maps_dir_path.exists() {
             return Ok(vec![]);
         }

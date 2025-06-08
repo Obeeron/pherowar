@@ -27,10 +27,9 @@ impl PWApp {
     pub async fn new(app_config: AppConfig) -> Result<Self, Box<dyn std::error::Error>> {
         let player_configs = app_config.player_configs;
 
-        let simulation = if let Some(map_name) = &app_config.simulation.map {
-            let loaded_map = crate::simulation::GameMap::load_map_with_dir(
+        let simulation = if let Some(map_name) = &app_config.map_name {
+            let loaded_map = crate::simulation::GameMap::load_map(
                 map_name,
-                app_config.simulation.maps_dir.as_deref(),
             )?;
 
             // Validate player count if CLI players are provided
@@ -396,7 +395,6 @@ impl PWApp {
 
     /// Handles the request to save the current map.
     fn handle_save_map_request(&mut self, name: String) {
-        let maps_dir = self.simulation.config.maps_dir.as_deref();
         if name.is_empty() {
             let prefill_name = self
                 .simulation
@@ -409,7 +407,7 @@ impl PWApp {
                 &prefill_name,
             ));
         } else {
-            let res = self.simulation.map.save_map_with_dir(&name, maps_dir);
+            let res = self.simulation.map.save_map(&name);
             if let Err(e) = res {
                 self.ui
                     .show_dialog(DialogPopup::new_info(&format!("Failed to save map: {}", e)));
@@ -422,9 +420,8 @@ impl PWApp {
 
     /// Handles the request to load a map from file.
     fn handle_load_map_request(&mut self, name: String) {
-        let maps_dir = self.simulation.config.maps_dir.as_deref();
         if name.is_empty() {
-            match GameMap::list_maps_with_dir(maps_dir) {
+            match GameMap::list_maps() {
                 Ok(map_list) if !map_list.is_empty() => {
                     self.ui.show_dialog(DialogPopup::new_map_picker(map_list));
                 }
@@ -440,7 +437,7 @@ impl PWApp {
                 }
             }
         } else {
-            match GameMap::load_map_with_dir(&name, maps_dir) {
+            match GameMap::load_map(&name) {
                 Ok(new_game_map) => {
                     let width = new_game_map.width;
                     let height = new_game_map.height;
