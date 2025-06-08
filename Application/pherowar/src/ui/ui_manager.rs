@@ -7,7 +7,7 @@ use crate::engine::GameCamera;
 use crate::simulation::ant::{Ant, AntRef};
 use crate::simulation::{DEFAULT_MAP_HEIGHT, DEFAULT_MAP_WIDTH, Simulation};
 use crate::ui::components::{
-    DebugPanel, DialogPopup, DialogPopupMode, DialogPopupResult, PheromoneDisplayMode, TopPanel,
+    AntStatusBar, DebugPanel, DialogPopup, DialogPopupMode, DialogPopupResult, PheromoneDisplayMode, TopPanel,
     VisualOptionsPanel,
 };
 use crate::ui::events::{AppAction, UIEvent};
@@ -24,6 +24,7 @@ pub struct UIManager {
     debug_panel: DebugPanel,
     pub top_panel: TopPanel,
     pub visual_options_panel: VisualOptionsPanel,
+    pub ant_status_bar: AntStatusBar,
     pub dialog_popup: Option<DialogPopup>,
     selected_ant: Option<AntRef>,
     camera_locked_on_ant: Option<AntRef>,
@@ -43,6 +44,7 @@ impl UIManager {
             last_screen_size: (window_w, window_h),
             last_win_px: egui::vec2(0.0, 0.0),
             visual_options_panel: VisualOptionsPanel::new(),
+            ant_status_bar: AntStatusBar::new(),
             dialog_popup: None,
             selected_ant: None,
             camera_locked_on_ant: None,
@@ -318,6 +320,9 @@ impl UIManager {
             })
             .collect();
         self.visual_options_panel.draw(egui_ctx, &colonies);
+
+        // Draw the ant status bar at the bottom
+        self.ant_status_bar.draw(egui_ctx, simulation);
 
         (ui_event, app_action, input_consumed)
     }
