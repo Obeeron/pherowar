@@ -28,6 +28,10 @@ pub struct Cli {
     /// List of colony players to spawn (player names separated by commas).
     #[arg(short = 'p', long, value_delimiter = ',')]
     players: Option<Vec<String>>,
+
+    /// Evaluate mode: auto-start and exit when there is a winner. Requires players to be set and >= 2.
+    #[arg(long)]
+    evaluate: bool,
 }
 
 /// Loads the simulation configuration from a TOML file or uses defaults.

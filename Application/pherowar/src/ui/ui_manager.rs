@@ -7,8 +7,8 @@ use crate::engine::GameCamera;
 use crate::simulation::ant::{Ant, AntRef};
 use crate::simulation::{DEFAULT_MAP_HEIGHT, DEFAULT_MAP_WIDTH, Simulation};
 use crate::ui::components::{
-    AntStatusBar, DebugPanel, DialogPopup, DialogPopupMode, DialogPopupResult, PheromoneDisplayMode, TopPanel,
-    VisualOptionsPanel,
+    AntStatusBar, DebugPanel, DialogPopup, DialogPopupMode, DialogPopupResult,
+    PheromoneDisplayMode, TopPanel, VisualOptionsPanel,
 };
 use crate::ui::events::{AppAction, UIEvent};
 
@@ -21,7 +21,7 @@ fn auto_zoom(ctx: &egui::Context, base_px: egui::Vec2) -> f32 {
 
 pub struct UIManager {
     drag_started_on_ui: bool,
-    debug_panel: DebugPanel,
+    pub debug_panel: DebugPanel,
     pub top_panel: TopPanel,
     pub visual_options_panel: VisualOptionsPanel,
     pub ant_status_bar: AntStatusBar,

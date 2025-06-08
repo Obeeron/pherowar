@@ -317,4 +317,9 @@ impl Simulation {
     pub fn total_ant_count(&self) -> usize {
         self.colonies.values().map(|colony| colony.ants.len()).sum()
     }
+
+    /// Explicitly cleanup all player connections to ensure cleanup happens before function returns
+    pub fn cleanup_players(&mut self) {
+        self.colonies.clear();
+    }
 }

@@ -22,7 +22,6 @@ pub struct ContainerHandle {
 impl ContainerHandle {
     /// Stops the Podman container.
     pub fn stop(&self) {
-        println!("Stopping container {}", self.container_id);
         if let Err(e) = Command::new("podman")
             .args(["stop", "-t", "0", &self.container_id])
             .output()
@@ -63,18 +62,12 @@ pub struct PlayerConnection {
 impl Drop for PlayerConnection {
     /// Cleans up resources (socket file and directory) when the connection is dropped.
     fn drop(&mut self) {
-        println!(
-            "Cleaning up socket and directory for colony {}",
-            self.colony_id
-        );
         let socket_dir = PathBuf::from(format!("/tmp/ant_sockets/{}", self.colony_id));
         let socket_path = socket_dir.join("pherowar.sock"); // Corrected socket file name
         if socket_path.exists() {
             if let Err(e) = fs::remove_file(&socket_path) {
                 // Check result of remove_file
                 eprintln!("Failed to remove socket file {:?}: {}", socket_path, e);
-            } else {
-                println!("Removed socket file {:?}", socket_path);
             }
         }
         if socket_dir.exists() {
@@ -85,10 +78,12 @@ impl Drop for PlayerConnection {
                     "Attempted to remove socket dir {:?}, result: {:?}",
                     socket_dir, e
                 );
-            } else {
-                println!("Removed socket directory {:?}", socket_dir);
             }
         }
+        println!(
+            "Cleaned up socket and directory for colony {}",
+            self.colony_id
+        );
     }
 }
 

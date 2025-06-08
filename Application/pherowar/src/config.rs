@@ -31,6 +31,7 @@ pub struct AppConfig {
     pub cli_players: Option<Vec<String>>,
     pub player_configs: Vec<PlayerConfig>,
     pub map_name: Option<String>,
+    pub evaluate: bool,
 }
 
 impl Default for SimulationConfig {
@@ -48,6 +49,7 @@ impl AppConfig {
     ) -> Result<Self, Box<dyn std::error::Error>> {
         let cli_players = cli.players;
         let map_name = cli.map.or_else(|| Self::find_first_available_map());
+        let evaluate = cli.evaluate;
 
         let player_configs = load_player_configs();
 
@@ -55,11 +57,30 @@ impl AppConfig {
             return Err("CLI players provided but no map specified".into());
         }
 
+        // Validate evaluate mode requirements
+        if evaluate {
+            match &cli_players {
+                Some(players) if players.len() >= 2 => {
+                    // Valid: evaluate mode with 2+ players
+                }
+                Some(players) => {
+                    return Err(format!(
+                        "Evaluate mode requires at least 2 players, but only {} provided",
+                        players.len()
+                    ).into());
+                }
+                None => {
+                    return Err("Evaluate mode requires players to be specified".into());
+                }
+            }
+        }
+
         Ok(Self {
             simulation,
             cli_players,
             player_configs,
             map_name,
+            evaluate,
         })
     }
 

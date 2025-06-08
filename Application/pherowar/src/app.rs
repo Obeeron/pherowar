@@ -13,13 +13,21 @@ thread_local! {
     static LAST_DOUBLE_CLICK_INFO: RefCell<Option<(Instant, (f32, f32))>> = RefCell::new(None);
 }
 
+/// Information about a game winner
+#[derive(Debug, Clone)]
+pub struct WinnerInfo {
+    pub name: String,
+    pub score: usize,
+}
+
 /// Main application structure for PheroWar.
 pub struct PWApp {
     ui: UIManager,          // Manages all UI elements and interactions.
     editor: EditorManager,  // Handles map editing tools and state.
     renderer: Renderer,     // Responsible for drawing the game world and UI.
     simulation: Simulation, // Core game logic, including ants, colonies, and map state.
-    winner_announced: bool, // Flag to ensure the winner announcement dialog is shown only once.
+    winner_announced: bool, // Flag to ensure the winner announcement is handled only once.
+    evaluate_mode: bool,    // Flag to indicate if the game should run in evaluate mode.
 }
 
 impl PWApp {
@@ -59,6 +67,7 @@ impl PWApp {
             renderer,
             simulation,
             winner_announced: false,
+            evaluate_mode: app_config.evaluate,
         };
 
         // Auto-spawn colonies if CLI players were provided
@@ -79,6 +88,12 @@ impl PWApp {
 
                 app.simulation.spawn_colony(pos, color, player_cfg);
             }
+        }
+
+        // Auto-start simulation in unlimited speed if evaluate mode is enabled
+        if app.evaluate_mode {
+            app.simulation.unpause();
+            app.ui.debug_panel.unlimited = true;
         }
 
         Ok(app)
@@ -115,7 +130,20 @@ impl PWApp {
             }
 
             if self.simulation.colonies.len() > 1 {
-                self.check_winner();
+                if let Some(winner_info) = self.check_winner() {
+                    if self.evaluate_mode {
+                        // Cleanup players for the winner message to be at the end
+                        self.simulation.cleanup_players();
+                    }
+                    println!(
+                        "Winner: {}\nRemaining ants: {}",
+                        winner_info.name, winner_info.score
+                    );
+                    if self.evaluate_mode {
+                        return;
+                    }
+                    self.winner_announced = true;
+                }
             }
 
             // Draw one frame
@@ -128,7 +156,8 @@ impl PWApp {
     }
 
     /// Checks if a winner has emerged in the simulation.
-    fn check_winner(&mut self) {
+    /// Returns winner info if the game should exit (in auto-run mode when winner is found).
+    fn check_winner(&mut self) -> Option<WinnerInfo> {
         // Check if a single colony remains
         let alive_keys: Vec<_> = self
             .simulation
@@ -140,20 +169,30 @@ impl PWApp {
 
         if alive_keys.len() == 1 && !self.winner_announced {
             self.simulation.pause();
-            let winner_name = &self.simulation.colonies[&alive_keys[0]].player_config.name;
-            // Only show dialog if not already open
-            if self.ui.dialog_popup.is_none() && !self.winner_announced {
-                self.winner_announced = true;
+            let winner_colony = &self.simulation.colonies[&alive_keys[0]];
+            let winner_name = winner_colony.player_config.name.clone();
+            let winner_score = winner_colony.ants.len();
+
+            // In normal mode, show dialog if not already open
+            if !self.evaluate_mode && self.ui.dialog_popup.is_none() {
                 self.ui
                     .show_dialog(crate::ui::components::DialogPopup::new_info(&format!(
-                        "🏆 {} wins! 🏆\nGreat antgineering.",
-                        winner_name
+                        "🏆 {} wins! 🏆\nGreat antgineering.\nRemaining: {} ants",
+                        winner_name, winner_score
                     )));
             }
+
+            // Return winner info - the caller will set winner_announced and handle printing
+            return Some(WinnerInfo {
+                name: winner_name,
+                score: winner_score,
+            });
         } else if alive_keys.len() >= 2 {
             // Reset winner announcement flag if there are multiple colonies alive
             self.winner_announced = false;
         }
+
+        None
     }
 
     /// Updates the UI state and handles input.
