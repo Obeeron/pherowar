@@ -67,7 +67,8 @@ impl AppConfig {
                     return Err(format!(
                         "Evaluate mode requires at least 2 players, but only {} provided",
                         players.len()
-                    ).into());
+                    )
+                    .into());
                 }
                 None => {
                     return Err("Evaluate mode requires players to be specified".into());

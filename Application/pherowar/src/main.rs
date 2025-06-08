@@ -21,7 +21,7 @@ pub struct Cli {
     #[arg(short, long, default_value = "./Application/config.toml")]
     config: Option<PathBuf>,
 
-    /// Name of the map to load.
+    /// Name of the map to load. Example: "Relic", "Labyrinth".
     #[arg(short, long)]
     map: Option<String>,
 

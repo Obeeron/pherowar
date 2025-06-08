@@ -1,5 +1,5 @@
-use crate::simulation::ant::AntRef;
 use crate::config::MAPS_DIR;
+use crate::simulation::ant::AntRef;
 use bincode::{decode_from_slice, encode_to_vec};
 use bincode_derive::{Decode, Encode};
 use macroquad::math::Vec2;
@@ -266,10 +266,7 @@ impl GameMap {
     }
 
     /// Save the map
-    pub fn save_map<P: AsRef<Path>>(
-        &mut self,
-        name: P,
-    ) -> io::Result<()> {
+    pub fn save_map<P: AsRef<Path>>(&mut self, name: P) -> io::Result<()> {
         let dir = std::path::Path::new(MAPS_DIR);
         if !dir.exists() {
             fs::create_dir_all(&dir)?;
@@ -285,9 +282,7 @@ impl GameMap {
     }
 
     /// Load a map and return a GameMap with loaded_map_name set.
-    pub fn load_map<P: AsRef<Path>>(
-        name: P,
-    ) -> io::Result<GameMap> {
+    pub fn load_map<P: AsRef<Path>>(name: P) -> io::Result<GameMap> {
         let name_str = name.as_ref().to_string_lossy().to_string();
         let file_path = std::path::Path::new(MAPS_DIR).join(&name_str);
         let data = fs::read(file_path)?;
