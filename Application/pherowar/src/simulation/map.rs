@@ -1,4 +1,5 @@
 use crate::simulation::ant::AntRef;
+use crate::config::MAPS_DIR;
 use bincode::{decode_from_slice, encode_to_vec};
 use bincode_derive::{Decode, Encode};
 use macroquad::math::Vec2;
@@ -269,7 +270,7 @@ impl GameMap {
         &mut self,
         name: P,
     ) -> io::Result<()> {
-        let dir = std::path::Path::new("./Application/maps/");
+        let dir = std::path::Path::new(MAPS_DIR);
         if !dir.exists() {
             fs::create_dir_all(&dir)?;
         }
@@ -288,7 +289,7 @@ impl GameMap {
         name: P,
     ) -> io::Result<GameMap> {
         let name_str = name.as_ref().to_string_lossy().to_string();
-        let file_path = std::path::Path::new("./Application/maps/").join(&name_str);
+        let file_path = std::path::Path::new(MAPS_DIR).join(&name_str);
         let data = fs::read(file_path)?;
         let (serialized, _len): (SerializedMap, _) =
             decode_from_slice(&data, bincode::config::standard())
@@ -301,7 +302,7 @@ impl GameMap {
 
     /// List all map files in the maps/ directory
     pub fn list_maps() -> io::Result<Vec<String>> {
-        let maps_dir_path = std::path::Path::new("./Application/maps/");
+        let maps_dir_path = std::path::Path::new(MAPS_DIR);
         if !maps_dir_path.exists() {
             return Ok(vec![]);
         }

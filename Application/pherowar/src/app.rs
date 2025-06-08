@@ -28,9 +28,7 @@ impl PWApp {
         let player_configs = app_config.player_configs;
 
         let simulation = if let Some(map_name) = &app_config.map_name {
-            let loaded_map = crate::simulation::GameMap::load_map(
-                map_name,
-            )?;
+            let loaded_map = crate::simulation::GameMap::load_map(map_name)?;
 
             // Validate player count if CLI players are provided
             if let Some(ref players) = app_config.cli_players {

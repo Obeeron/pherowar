@@ -9,6 +9,11 @@ use std::path::Path;
 pub const DEFAULT_WINDOW_WIDTH: f32 = 1920.0;
 pub const DEFAULT_WINDOW_HEIGHT: f32 = 1080.0;
 
+// Directory path constants
+pub const MAPS_DIR: &str = "./Application/maps/";
+pub const PLAYERS_DIR: &str = "./players/";
+pub const ASSETS_DIR: &str = "./Application/assets/";
+
 #[derive(Deserialize, Debug, Clone, Serialize, Encode, Decode)]
 pub struct PlayerConfig {
     pub name: String,
@@ -60,7 +65,7 @@ impl AppConfig {
 
     /// Find the first available map in the maps directory
     fn find_first_available_map() -> Option<String> {
-        let maps_dir = Path::new("./Application/maps/");
+        let maps_dir = Path::new(MAPS_DIR);
         if let Ok(entries) = fs::read_dir(maps_dir) {
             for entry in entries.flatten() {
                 let path = entry.path();
@@ -89,7 +94,7 @@ pub fn window_conf() -> Conf {
 
 pub fn load_player_configs() -> Vec<PlayerConfig> {
     let mut players = Vec::new();
-    let players_dir = Path::new("./players/");
+    let players_dir = Path::new(PLAYERS_DIR);
     if let Ok(entries) = fs::read_dir(players_dir) {
         for entry in entries.flatten() {
             let path = entry.path().canonicalize().unwrap_or_default();

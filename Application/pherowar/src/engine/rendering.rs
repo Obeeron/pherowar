@@ -1,4 +1,5 @@
 use super::GameCamera;
+use crate::config::ASSETS_DIR;
 use crate::simulation::{
     ANT_LENGTH, AntRef, COLONY_NEST_SIZE, Colony, DEFAULT_FOOD_AMOUNT, GameMap,
     MAX_PHEROMONE_AMOUNT, Simulation, Terrain,
@@ -40,12 +41,12 @@ impl Renderer {
     pub async fn new(map_width: u32, map_height: u32) -> Self {
         let camera = GameCamera::new(map_width, map_height);
 
-        let ant_texture = load_texture("./Application/assets/ant.png")
+        let ant_texture = load_texture(&format!("{}ant.png", ASSETS_DIR))
             .await
             .expect("Failed to load assets/ant.png");
         ant_texture.set_filter(FilterMode::Linear);
 
-        let food_texture = load_texture("./Application/assets/food.png")
+        let food_texture = load_texture(&format!("{}food.png", ASSETS_DIR))
             .await
             .expect("Failed to load assets/food.png");
         food_texture.set_filter(FilterMode::Linear);
