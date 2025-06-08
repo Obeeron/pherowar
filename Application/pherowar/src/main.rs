@@ -16,10 +16,18 @@ use toml;
 /// Command-line arguments for PheroWar.
 #[derive(Parser)]
 #[command(name = "PheroWar", version, about = "PheroWar Simulation")]
-struct Cli {
+pub struct Cli {
     /// Path to the TOML configuration file.
-    #[arg(short, long)]
+    #[arg(short, long, default_value = "./Application/config.toml")]
     config: Option<PathBuf>,
+
+    /// Name of the map to load.
+    #[arg(short, long)]
+    map: Option<String>,
+
+    /// List of colony players to spawn (player names separated by commas).
+    #[arg(short = 'p', long, value_delimiter = ',')]
+    players: Option<Vec<String>>,
 }
 
 /// Loads the simulation configuration from a TOML file or uses defaults.
@@ -42,7 +50,7 @@ fn load_config(path: Option<PathBuf>) -> Result<SimulationConfig, Box<dyn std::e
                 }
             };
             println!("Loaded config from '{}'", path.display());
-            println!("Config: {:?}", config);
+            println!("{:?}", config);
             Ok(config)
         }
         _ => {
@@ -57,14 +65,30 @@ fn load_config(path: Option<PathBuf>) -> Result<SimulationConfig, Box<dyn std::e
 async fn main() {
     let cli = Cli::parse();
 
-    match load_config(cli.config) {
-        Ok(config) => {
-            let players = config::load_player_configs(config.players_dir.as_deref());
-            let mut app = PWApp::new(config, players).await;
-            app.run().await;
-        }
+    let config = match load_config(cli.config.clone()) {
+        Ok(config) => config,
         Err(e) => {
             eprintln!("Error loading config: {}", e);
+            return;
         }
-    }
+    };
+
+    // Create app config with validation
+    let app_config = match config::AppConfig::from_cli_and_config(cli, config) {
+        Ok(app_config) => app_config,
+        Err(e) => {
+            eprintln!("Error: {}", e);
+            return;
+        }
+    };
+
+    let mut app = match PWApp::new(app_config).await {
+        Ok(app) => app,
+        Err(e) => {
+            eprintln!("Error creating application: {}", e);
+            return;
+        }
+    };
+
+    app.run().await;
 }

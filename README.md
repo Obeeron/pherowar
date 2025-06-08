@@ -27,7 +27,7 @@ This will build pherowar inside a podman container and create the player wrapper
 
 Run pherowar:
 ```bash
-./run.sh
+./pherowar.sh
 ```
 
 ## Documentation

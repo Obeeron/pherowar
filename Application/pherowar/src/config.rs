@@ -23,6 +23,13 @@ pub struct SimulationConfig {
     pub maps_dir: Option<String>,    // Directory for map files
 }
 
+/// Configuration for the entire application including CLI parameters
+pub struct AppConfig {
+    pub simulation: SimulationConfig,
+    pub cli_players: Option<Vec<String>>,
+    pub player_configs: Vec<PlayerConfig>,
+}
+
 impl Default for SimulationConfig {
     fn default() -> Self {
         Self {
@@ -31,6 +38,35 @@ impl Default for SimulationConfig {
             players_dir: Some("players/".to_string()),
             maps_dir: Some("maps/".to_string()),
         }
+    }
+}
+
+impl AppConfig {
+    pub fn from_cli_and_config(
+        cli: crate::Cli,
+        mut simulation: SimulationConfig,
+    ) -> Result<Self, Box<dyn std::error::Error>> {
+        if let Some(map_name) = cli.map {
+            simulation.map = Some(map_name);
+        }
+
+        let cli_players = cli.players;
+
+        let player_configs = load_player_configs(simulation.players_dir.as_deref());
+
+        if simulation.map.is_some() && cli_players.is_none() {
+            return Err("When providing a map, you must also provide a list of players".into());
+        }
+
+        if cli_players.is_some() && simulation.map.is_none() {
+            return Err("CLI players provided but no map specified".into());
+        }
+
+        Ok(Self {
+            simulation,
+            cli_players,
+            player_configs,
+        })
     }
 }
 

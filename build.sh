@@ -30,5 +30,11 @@ podman cp "$container_id:/out/bin/." "$OUTPUT_BIN_DIR/"
 # User the player wrapper binary to build the player image
 podman build -t pherowar-player:latest -f "$APP_DIR/Dockerfile.player" "$APP_DIR"
 
+
+# Build the dummy example brain
+make -C dummy-brain
+mkdir -p ./players
+cp dummy-brain/brain.so ./players/dummy_brain.so
+
 echo ""
-echo -e "\033[1mBuild complete.\033[0m You can now run the game using the \033[32mrun.sh\033[0m script."
+echo -e "\033[1mBuild complete.\033[0m You can now run the game using the \033[32mpherowar.sh\033[0m script."

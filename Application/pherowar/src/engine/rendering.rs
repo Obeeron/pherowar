@@ -40,12 +40,12 @@ impl Renderer {
     pub async fn new(map_width: u32, map_height: u32) -> Self {
         let camera = GameCamera::new(map_width, map_height);
 
-        let ant_texture = load_texture("assets/ant.png")
+        let ant_texture = load_texture("./Application/assets/ant.png")
             .await
             .expect("Failed to load assets/ant.png");
         ant_texture.set_filter(FilterMode::Linear);
 
-        let food_texture = load_texture("assets/food.png")
+        let food_texture = load_texture("./Application/assets/food.png")
             .await
             .expect("Failed to load assets/food.png");
         food_texture.set_filter(FilterMode::Linear);

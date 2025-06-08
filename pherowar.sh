@@ -3,14 +3,6 @@
 
 set -e
 
-# ==========================================================
-# TODO: Modify to build your own ant brain(s)
-make -C dummy-brain
-mkdir -p ./players
-cp dummy-brain/brain.so ./players/dummy_brain.so
-# ==========================================================
-
-
 if [[ ! -f ./Application/bin/pherowar ]]; then
   echo "error: ./bin/pherowar not found. First run ./build.sh"
   exit 1
@@ -26,7 +18,4 @@ if ! podman image exists pherowar-player:latest; then
   exit 1
 fi
 
-(
-  cd Application
-  ./bin/pherowar --config ./config.toml
-)
+./Application/bin/pherowar $@

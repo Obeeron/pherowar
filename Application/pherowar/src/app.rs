@@ -1,4 +1,4 @@
-use crate::config::SimulationConfig;
+use crate::config::AppConfig;
 use crate::editor::{EditorManager, ToolType};
 use crate::engine::{CameraAction, Renderer};
 use crate::simulation::{GameMap, Simulation, THINK_INTERVAL};
@@ -24,20 +24,67 @@ pub struct PWApp {
 
 impl PWApp {
     /// Creates a new `PWApp` instance.
-    pub async fn new(
-        config: SimulationConfig,
-        player_configs: Vec<crate::config::PlayerConfig>,
-    ) -> Self {
-        let map_name = config.map.clone();
-        let simulation = Simulation::new(&config, player_configs.clone(), map_name);
+    pub async fn new(app_config: AppConfig) -> Result<Self, Box<dyn std::error::Error>> {
+        let player_configs = app_config.player_configs;
+
+        let simulation = if let Some(map_name) = &app_config.simulation.map {
+            let loaded_map = crate::simulation::GameMap::load_map_with_dir(
+                map_name,
+                app_config.simulation.maps_dir.as_deref(),
+            )?;
+
+            // Validate player count if CLI players are provided
+            if let Some(ref players) = app_config.cli_players {
+                let expected_colonies = loaded_map.placeholder_colony_locations.len();
+                let provided_players = players.len();
+
+                if expected_colonies != provided_players {
+                    return Err(format!(
+                        "Colony count mismatch: Map '{}' expects {} colonies but {} players were provided",
+                        map_name, expected_colonies, provided_players
+                    ).into());
+                }
+            }
+
+            // Create simulation with the loaded map
+            let mut sim = Simulation::new(&app_config.simulation, player_configs.clone(), None);
+            sim.map = loaded_map;
+            sim
+        } else {
+            Simulation::new(&app_config.simulation, player_configs.clone(), None)
+        };
+
         let renderer = Renderer::new(simulation.map.width, simulation.map.height).await;
-        Self {
+
+        let mut app = Self {
             ui: UIManager::new(),
             editor: EditorManager::new(&simulation.player_configs),
             renderer,
             simulation,
             winner_announced: false,
+        };
+
+        // Auto-spawn colonies if CLI players were provided
+        if let Some(players) = app_config.cli_players {
+            let placeholder_locations = app.simulation.map.placeholder_colony_locations.clone();
+
+            for (i, player_name) in players.iter().enumerate() {
+                let player_cfg = player_configs
+                    .iter()
+                    .find(|p| p.name == *player_name)
+                    .ok_or_else(|| format!("Player config for '{}' not found", player_name))?
+                    .clone();
+
+                let pos = placeholder_locations[i];
+
+                let color = crate::editor::color_palette::PREDEFINED_COLONY_COLORS
+                    [i % crate::editor::color_palette::PREDEFINED_COLONY_COLORS.len()];
+
+                app.simulation.spawn_colony(pos, color, player_cfg);
+            }
         }
+
+        Ok(app)
     }
 
     /// Runs the main application loop.
