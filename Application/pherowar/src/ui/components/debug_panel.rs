@@ -165,13 +165,16 @@ impl DebugPanel {
                                     );
 
                                     ui.horizontal(|ui| {
-                                        ui.colored_label(colony_color, format!("\"{}\"", name));
+                                        ui.colored_label(colony_color, format!("Colony {}:", id));
                                     });
-                                    ui.label(format!("  Ants: {}", colony.ants.len()));
+                                    ui.label(format!("{}", name));
                                     ui.end_row();
 
-                                    ui.label("");
-                                    ui.label(format!("  Food: {}", colony.food_collected));
+                                    ui.label(format!(
+                                        "  Ants: {}, Food: {}",
+                                        colony.ants.len(),
+                                        colony.food_collected
+                                    ));
                                     ui.end_row();
                                 }
                             }

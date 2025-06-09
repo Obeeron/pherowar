@@ -176,10 +176,10 @@ impl PWApp {
             // In normal mode, show dialog if not already open
             if !self.evaluate_mode && self.ui.dialog_popup.is_none() {
                 self.ui
-                    .show_dialog(crate::ui::components::DialogPopup::new_info(&format!(
-                        "🏆 {} wins! 🏆\nGreat antgineering.\nRemaining: {} ants",
-                        winner_name, winner_score
-                    )));
+                    .show_dialog(crate::ui::components::DialogPopup::new_info_with_title(
+                        &format!("🏆 {} wins! 🏆", winner_name),
+                        &format!("Remaining: {} ants\nGreat antgineering.", winner_score),
+                    ));
             }
 
             // Return winner info - the caller will set winner_announced and handle printing
@@ -371,7 +371,10 @@ impl PWApp {
             self.handle_app_actions(Some(AppAction::TogglePause));
             return true;
         } else if is_key_pressed(KeyCode::R) {
-            self.handle_app_actions(Some(AppAction::RequestReset));
+            // Show reset confirmation dialog instead of directly resetting
+            self.ui.show_dialog(DialogPopup::new_confirm(
+                "Are you sure you want to reset the simulation?"
+            ));
             return true;
         } else if is_key_pressed(KeyCode::S) {
             self.handle_app_actions(Some(AppAction::RequestSaveMap(String::new())));
@@ -439,8 +442,7 @@ impl PWApp {
                 .loaded_map_name
                 .clone()
                 .unwrap_or_else(|| "Untitled.map".to_string());
-            self.ui.show_dialog(DialogPopup::new_input(
-                "Enter map name to save:",
+            self.ui.show_dialog(DialogPopup::new_save_map_input(
                 &prefill_name,
             ));
         } else {

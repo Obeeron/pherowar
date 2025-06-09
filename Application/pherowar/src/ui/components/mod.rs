@@ -11,7 +11,7 @@ mod visual_options;
 pub use ant_status_bar::AntStatusBar;
 pub use colony_options::ColonyOptions;
 pub use debug_panel::DebugPanel;
-pub use dialog::{DialogPopup, DialogPopupMode, DialogPopupResult};
+pub use dialog::{DialogContent, DialogPopup, DialogPurpose, DialogResult};
 pub use tool_size_slider::ToolSizeSlider;
 pub use top_panel::TopPanel;
 pub use visual_options::{PheromoneDisplayMode, VisualOptionsPanel};

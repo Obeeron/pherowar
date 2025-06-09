@@ -7,7 +7,7 @@ use crate::engine::GameCamera;
 use crate::simulation::ant::{Ant, AntRef};
 use crate::simulation::{DEFAULT_MAP_HEIGHT, DEFAULT_MAP_WIDTH, Simulation};
 use crate::ui::components::{
-    AntStatusBar, DebugPanel, DialogPopup, DialogPopupMode, DialogPopupResult,
+    AntStatusBar, DebugPanel, DialogContent, DialogPopup, DialogPurpose, DialogResult,
     PheromoneDisplayMode, TopPanel, VisualOptionsPanel,
 };
 use crate::ui::events::{AppAction, UIEvent};
@@ -159,24 +159,32 @@ impl UIManager {
                 let dialog_still_open = dialog.draw(egui_ctx);
                 if !dialog_still_open {
                     if let Some(result) = dialog.result.take() {
-                        match result {
-                            DialogPopupResult::InputConfirmed(name) => {
-                                if let DialogPopupMode::Input { label, .. } = &dialog.mode {
-                                    if label.contains("save") {
-                                        app_action = Some(AppAction::RequestSaveMap(name));
-                                    } else if label.contains("load") {
-                                        app_action = Some(AppAction::RequestLoadMap(name));
+                        match (&dialog.purpose, result) {
+                            (DialogPurpose::LoadMap, DialogResult::ChoiceConfirmed(name)) => {
+                                app_action = Some(AppAction::RequestLoadMap(name));
+                            }
+                            (
+                                DialogPurpose::NewMap,
+                                DialogResult::TwoNumberConfirmed(width, height),
+                            ) => {
+                                app_action = Some(AppAction::RequestNewMap {
+                                    width: width as u32,
+                                    height: height as u32,
+                                });
+                            }
+                            (DialogPurpose::SaveMap, DialogResult::InputConfirmed) => {
+                                if let DialogContent::Input { value, .. } = &dialog.content {
+                                    app_action = Some(AppAction::RequestSaveMap(value.clone()));
+                                }
+                            }
+                            (DialogPurpose::Confirmation, DialogResult::Confirmed) => {
+                                if let DialogContent::Message(message) = &dialog.content {
+                                    if message.contains("reset") {
+                                        app_action = Some(AppAction::RequestReset);
                                     }
                                 }
                             }
-                            DialogPopupResult::Confirmed => {
-                                app_action = Some(AppAction::RequestReset);
-                            }
-                            DialogPopupResult::Cancelled => {}
-                            DialogPopupResult::InfoOk => {}
-                            DialogPopupResult::NewMapConfirmed { width, height } => {
-                                app_action = Some(AppAction::RequestNewMap { width, height });
-                            }
+                            _ => {}
                         }
                     }
                     self.dialog_popup = None;
