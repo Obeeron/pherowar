@@ -1,3 +1,24 @@
+v1.2
+- Bug Fixes
+    - Fixed bug where resetting a loaded map would respawn deleted nest placeholders
+    - When resetting a game, colonies are now respawned with the same id
+- Features
+    - Added CLI options
+        - `--map` to specify the map file to load.
+        - `--players` to specify a list of players to auto load.
+        - `--evaluate` auto-start in unlimited speed and exit when there is a winner. Requires players to be set and >= 2.
+    - Updated default map load logic. When no map is specified, it will load the first map found in the `maps` directory or default to empty map.
+- UI/UX Improvements
+    - Added an ant satus bar to display the current proportion of ant's per colony. 
+    - Added colony food counter in debug panel
+    - Added `Enter` and `Escape` as shortcuts to pop-ups
+- Technical Improvements
+    - Modified the ant's timer reset by wrapping its current value around the max timer value using a modulo instead of resetting to 0. This allows for more consistent ant update. This only effects simulation in low speed.
+- Project Structure Changes
+    - Removed `map`, `players_dir` and `maps_dir` from `config.toml`
+    - Renamed `run.sh` to `pherowar.sh`. 
+    - Moved compilation of dummy example to `build.sh`.
+
 v1.1
 - Fixed a critical bug where removing/replacing a colony would not remove its ants references from the map data, confusing newly spawned colonies with ghost refs.
 - Updated documentation and fixed inconsistencies with actual simulation.
