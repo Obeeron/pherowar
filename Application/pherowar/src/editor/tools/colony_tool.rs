@@ -283,6 +283,7 @@ pub fn apply_colony(
                         target_world_center_pos,
                         final_color,
                         player_cfg.clone(),
+                        None,
                     );
                     color_palette.update_selection(simulation); // Advance to next available color
                     return true;

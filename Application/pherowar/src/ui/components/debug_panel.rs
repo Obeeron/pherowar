@@ -1,6 +1,6 @@
 use crate::engine::GameCamera;
 use crate::simulation::ant::Ant;
-use crate::simulation::{MAX_TIME_MULTIPLIER, MIN_TIME_MULTIPLIER, Simulation};
+use crate::simulation::{Colony, MAX_TIME_MULTIPLIER, MIN_TIME_MULTIPLIER, Simulation};
 use crate::ui::events::AppAction;
 use crate::ui::{BASE_PADDING, BASE_SPACING};
 use egui::RichText;
@@ -154,7 +154,12 @@ impl DebugPanel {
                                 ui.separator();
                                 ui.end_row();
 
-                                for (id, colony) in &simulation.colonies {
+                                // Collect colonies and sort by ID for consistent display order
+                                let mut colony_list: Vec<(&u32, &Colony)> = 
+                                    simulation.colonies.iter().collect();
+                                colony_list.sort_by_key(|(id, _)| *id);
+
+                                for (id, colony) in colony_list {
                                     let name = &colony.player_config.name;
 
                                     let colony_color = egui::Color32::from_rgba_unmultiplied(

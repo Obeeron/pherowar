@@ -89,27 +89,41 @@ impl Simulation {
         }
     }
 
-    pub fn spawn_colony(&mut self, pos: Vec2, color: Color, player_cfg: PlayerConfig) {
+    pub fn spawn_colony(
+        &mut self,
+        pos: Vec2,
+        color: Color,
+        player_cfg: PlayerConfig,
+        id: Option<u32>,
+    ) {
         if self.colonies.len() >= MAX_COLONIES {
             eprintln!("Max colonies reached. Cannot spawn new colony.");
             return;
         }
 
-        let mut colony_id: Option<u32> = None;
-        for i in 0..MAX_COLONIES as u32 {
-            if !self.colonies.contains_key(&i) {
-                colony_id = Some(i);
-                break;
-            }
-        }
-
-        let current_colony_id = match colony_id {
-            Some(id) => id,
-            None => {
-                eprintln!(
-                    "No available colony ID found (this should not happen if MAX_COLONIES check passed)."
-                );
+        let current_colony_id = if let Some(id) = id {
+            if self.colonies.contains_key(&id) {
+                eprintln!("Colony with ID {} already exists. Cannot spawn.", id);
                 return;
+            }
+            id
+        } else {
+            let mut colony_id: Option<u32> = None;
+            for i in 0..MAX_COLONIES as u32 {
+                if !self.colonies.contains_key(&i) {
+                    colony_id = Some(i);
+                    break;
+                }
+            }
+
+            match colony_id {
+                Some(id) => id,
+                None => {
+                    eprintln!(
+                        "No available colony ID found (this should not happen if MAX_COLONIES check passed)."
+                    );
+                    return;
+                }
             }
         };
 
@@ -258,10 +272,15 @@ impl Simulation {
         self.pause();
         self.tick = 0;
 
-        // Capture current colony and nest placeholder positions
+        // Capture current colony and nest placeholder positions with their IDs
         let mut colony_spawn_data = Vec::new();
-        for (_, colony) in &self.colonies {
-            colony_spawn_data.push((colony.pos, colony.color, colony.player_config.clone()));
+        for (&colony_id, colony) in &self.colonies {
+            colony_spawn_data.push((
+                colony_id,
+                colony.pos,
+                colony.color,
+                colony.player_config.clone(),
+            ));
         }
         let placeholder_positions = self.map.placeholder_colony_locations.clone();
 
@@ -307,10 +326,13 @@ impl Simulation {
         // Clear all cells
         self.map.soft_reset();
 
-        // Re-spawn colonies at their original positions
-        for (pos, color, player_cfg) in colony_spawn_data.into_iter() {
-            println!("Spawning colony at {:?} with color {:?}", pos, color);
-            self.spawn_colony(pos, color, player_cfg);
+        // Re-spawn colonies at their original positions with their original IDs
+        for (colony_id, pos, color, player_cfg) in colony_spawn_data.into_iter() {
+            println!(
+                "Spawning colony {} at {:?} with color {:?}",
+                colony_id, pos, color
+            );
+            self.spawn_colony(pos, color, player_cfg, Some(colony_id));
         }
 
         // Re-spawn placeholder colonies at their original positions

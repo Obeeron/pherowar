@@ -86,7 +86,7 @@ impl PWApp {
                 let color = crate::editor::color_palette::PREDEFINED_COLONY_COLORS
                     [i % crate::editor::color_palette::PREDEFINED_COLONY_COLORS.len()];
 
-                app.simulation.spawn_colony(pos, color, player_cfg);
+                app.simulation.spawn_colony(pos, color, player_cfg, None);
             }
         }
 
