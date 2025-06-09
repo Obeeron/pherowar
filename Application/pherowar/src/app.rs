@@ -371,9 +371,8 @@ impl PWApp {
             self.handle_app_actions(Some(AppAction::TogglePause));
             return true;
         } else if is_key_pressed(KeyCode::R) {
-            // Show reset confirmation dialog instead of directly resetting
             self.ui.show_dialog(DialogPopup::new_confirm(
-                "Are you sure you want to reset the simulation?"
+                "Are you sure you want to reset the simulation?",
             ));
             return true;
         } else if is_key_pressed(KeyCode::S) {
@@ -442,9 +441,8 @@ impl PWApp {
                 .loaded_map_name
                 .clone()
                 .unwrap_or_else(|| "Untitled.map".to_string());
-            self.ui.show_dialog(DialogPopup::new_save_map_input(
-                &prefill_name,
-            ));
+            self.ui
+                .show_dialog(DialogPopup::new_save_map_input(&prefill_name));
         } else {
             let res = self.simulation.map.save_map(&name);
             if let Err(e) = res {

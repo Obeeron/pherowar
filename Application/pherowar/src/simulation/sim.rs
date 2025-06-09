@@ -246,22 +246,6 @@ impl Simulation {
         false // Colony not found
     }
 
-    pub fn reset_colonies(&mut self) {
-        let mut colony_spawn_data = Vec::new();
-        for (_, colony) in &self.colonies {
-            colony_spawn_data.push((colony.pos, colony.color, colony.player_config.clone()));
-        }
-
-        self.colonies.clear();
-
-        self.map.soft_reset();
-
-        for (pos, color, player_cfg) in colony_spawn_data.into_iter() {
-            println!("Spawning colony at {:?} with color {:?}", pos, color);
-            self.spawn_colony(pos, color, player_cfg);
-        }
-    }
-
     pub fn pause(&mut self) {
         self.is_paused = true;
     }
@@ -274,18 +258,32 @@ impl Simulation {
         self.pause();
         self.tick = 0;
 
+        // Capture current colony and nest placeholder positions
+        let mut colony_spawn_data = Vec::new();
+        for (_, colony) in &self.colonies {
+            colony_spawn_data.push((colony.pos, colony.color, colony.player_config.clone()));
+        }
+        let placeholder_positions = self.map.placeholder_colony_locations.clone();
+
+        // Reload map
         if let Some(ref name) = self.map.loaded_map_name.clone() {
             match GameMap::load_map(name) {
                 Ok(mut loaded_map) => {
                     loaded_map.loaded_map_name = Some(name.clone());
                     self.map = loaded_map;
 
-                    // Nests are managed by colonies, so remove any nest terrain from the loaded map
-                    // as reset_colonies will handle spawning them.
+                    // Remove existing nests and placeholders from the loaded map
+                    // They are be re-placed manually
                     for y in 0..self.map.height as usize {
                         for x in 0..self.map.width as usize {
-                            if matches!(self.map.get_terrain_at(x, y), Some(Terrain::Nest(_))) {
-                                self.map.remove_terrain_at(x, y);
+                            match self.map.get_terrain_at(x, y) {
+                                Some(Terrain::Nest(_)) => {
+                                    self.map.remove_terrain_at(x, y);
+                                }
+                                Some(Terrain::PlaceholderColony) => {
+                                    self.map.remove_terrain_at(x, y);
+                                }
+                                _ => {}
                             }
                         }
                     }
@@ -302,8 +300,28 @@ impl Simulation {
             self.map.soft_reset();
         }
 
-        // Reset current configuration of simulation colonies
-        self.reset_colonies();
+        // Clear colonies and placeholder of loaded map
+        self.colonies.clear();
+        self.map.placeholder_colony_locations.clear();
+
+        // Clear all cells
+        self.map.soft_reset();
+
+        // Re-spawn colonies at their original positions
+        for (pos, color, player_cfg) in colony_spawn_data.into_iter() {
+            println!("Spawning colony at {:?} with color {:?}", pos, color);
+            self.spawn_colony(pos, color, player_cfg);
+        }
+
+        // Re-spawn placeholder colonies at their original positions
+        for pos in placeholder_positions.into_iter() {
+            if !self
+                .map
+                .place_nest_placeholder_at(pos.x.floor() as usize, pos.y.floor() as usize)
+            {
+                eprintln!("Failed to place nest placeholder at ({}, {})", pos.x, pos.y);
+            }
+        }
     }
 
     pub fn create_new_map(&mut self, width: u32, height: u32) {
